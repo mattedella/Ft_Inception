@@ -1,0 +1,20 @@
+Docker is an open platform for developing, shipping, and running applications.
+Docker provides the ability to package and run an application in a loosely isolated environment called a container.
+The isolation and security lets you run many containers simultaneously on a given host.
+
+Docker provides tooling and a platform to manage the lifecycle of your containers:
+
+- Develop your application and its supporting components using containers.
+- The container becomes the unit for distributing and testing your application.
+- When you're ready, deploy your application into your production environment, as a container or an orchestrated service.
+  This works the same whether your production environment is a local data center, a cloud provider, or a hybrid of the two.
+
+Docker used for:
+
+- Fast, consistent delivery of your applications;
+- - work in standardized environments using local containers, great for continuous integration and continuous delivery (CI/CD) workflows.
+- Responsive deployment and scaling;
+- - highly portable workloads. Docker containers can run on a developer's local laptop, on physical or virtual machines in a data center,
+	on cloud providers, or in a mixture of environments.
+- Running more workloads on the same hardware;
+- - 
