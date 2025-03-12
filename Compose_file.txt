@@ -1,0 +1,11 @@
+The Compose File:
+
+The default path for a Compose file is "docker-compose.yaml" that is placed in the working directory.
+You can use fragments and extensions to keep your Compose file efficient and easy to maintain.
+
+Multiple Compose files can be merged together.
+The combination of YAML files is implemented by appending or overriding YAML elements based on the Compose file order you set.
+Simple attributes and maps get overridden by the highest order Compose file, lists get merged by appending.
+
+If you want to reuse other Compose files, or factor out parts of your application model into separate Compose files, you can also use include.
+This is useful if your Compose application is dependent on another application which is managed by a different team, or needs to be shared with others.
