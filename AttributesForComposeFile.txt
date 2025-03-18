@@ -1,0 +1,58 @@
+_ build:
+  defines configuration options that are applied by Compose to build Docker images from source.
+  can be specified either as a string containing a path to the build context or as a detalied structure:
+  using the sting syntax, only the build context can be configured as either:
+  -- relative path to the Compose file's parent folder. this path must be a direcory and must contain a Dockerfile:
+	 'services:
+	  	webapp:
+			build ./dir'
+  -- a Git repository URL. Git URLs accept context configuration in their fragment section, separated by a ":". the first part represents the reference that Git checks out, and can be either a branch, a tag or a remote reference.
+	 the second part represents a subdirectory inside the repository that is used as a buind context:
+	 'services:
+	 	webapp:
+			build: <Git repository>:<subdirectory>'
+  alternatively it can be an object with fields defined as follows:
+    - context:
+	  defines either a path to a direcory containing a Dockerfile, or a URL to a git repository, if not expicitly, it defaults to project directory (.)
+
+	- additional_contexts:
+	  defines a list of named contexts the image builder should use during image build.
+	  can be a mapping or a list:
+	  list:
+	  'build:
+	  	context: .
+		additional_contexts:
+		- resources=/path/to/resources
+		- app=docker-image://my-app:latest
+		- source=https://github.com/myuser/project.git'
+	  mapping:
+	  'build:
+	  	context: .
+		additional_contexts:
+			resources: /path/to/resources
+			app: docker-image://my-app:latest
+			source: https://github.com/myuser/project.git'
+	
+	- cache_form:
+	  defines a list of sources the image builder should use for cache resolution.
+	  cache location syntax follow the global format "[NAME|type=TYPE[,KEY=VALUE]]
+	
+	- cache_to:
+	  defines a list of export locations to be used to share build cache with future builds.
+	  cache target is defined using the syntax "type=TYPE[,KEY+VALUE].
+	
+	- dockerfile:
+	  sets an alternate Dockerfile. a realtive path is resolved from the build context.
+	  when set, "dockerfile_inline" attribute is not allowed and Compose rejects any Compose file having both set.
+	
+	- dockerfile_infile:
+	  defines the Dockerfile content as an inlined string in a Compose file. when set, the "dockerfile" attribute is not allowed.
+	
+	- entitlements:
+	  defines extra privileged enititlements to be allowed during the build
+	
+	- extra_hosts:
+	  adds hostname mapping at build-time.
+	  'extra_hosts:
+	  	- "somehost=162.242.195.83"
+		- otherhost:50.21.209.229"'
