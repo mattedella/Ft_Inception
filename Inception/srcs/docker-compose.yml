@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
+    container_name: nginx
+    ports:
+      - "443:443"  # Expose only HTTPS port
+    volumes:
+      - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/certs:/etc/ssl/certs  # SSL certificates folder
+    restart: always
+    networks:
+      - mynetwork
+    environment:
+      - NGINX_HOST=mdella-r.42.fr
+    depends_on:
+      - wordpress
+    entrypoint: ["/bin/sh", "-c", "exec nginx -g 'daemon off;'"]
+
+  wordpress:
+    build:
+      context: .
+      dockerfile: ./wordpress/Dockerfile
+    container_name: wordpress
+    volumes:
+      - wordpress-data:/var/www/html
+    restart: always
+    networks:
+      - mynetwork
+    environment:
+      WORDPRESS_DB_HOST: mariadb:3306
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      WORDPRESS_TABLE_PREFIX: wp_
+      WORDPRESS_DEBUG: 1
+    depends_on:
+      - mariadb
+    entrypoint: ["php-fpm"]
+
+  mariadb:
+    build:
+      context: .
+      dockerfile: ./mariadb/Dockerfile
+    container_name: mariadb
+    volumes:
+      - wordpress-db:/var/lib/mysql
+    restart: always
+    networks:
+      - mynetwork
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    entrypoint: ["docker-entrypoint.sh", "mysqld"]
+
+volumes:
+  wordpress-data:
+  wordpress-db:
+
+networks:
+  mynetwork:
+    driver: bridge
