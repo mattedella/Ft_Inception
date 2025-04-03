@@ -1,0 +1,8 @@
+# .env file
+
+DOMAIN_NAME=mdella-r.42.fr
+WORDPRESS_DB_USER=wordpress
+WORDPRESS_DB_PASSWORD=secure_password_123
+MYSQL_ROOT_PASSWORD=root_password
+MYSQL_USER=wordpress
+MYSQL_PASSWORD=wordpress_password
