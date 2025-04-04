@@ -1,11 +1,9 @@
-# mariadb/Dockerfile
+FROM debian:latest
 
-FROM mariadb:10.6-alpine
+RUN apt-get update -y && apt-get install mariadb-server -y
 
-# No passwords are hardcoded here. They are set via environment variables.
+COPY ./tools/50-server.cnf /etc/mysql/mariadb.conf.d/
 
-# Expose the MariaDB port
-EXPOSE 3306
+COPY ./tools/script.sh /
 
-# Default entrypoint for MariaDB to run the database server
-ENTRYPOINT ["docker-entrypoint.sh", "mysqld"]
+CMD ["/script.sh"]

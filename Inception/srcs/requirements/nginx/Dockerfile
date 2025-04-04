@@ -1,12 +1,11 @@
 # nginx/Dockerfile
 
-FROM nginx:1.23-alpine
+FROM debian:latest
 
-# Install OpenSSL for TLS support
-RUN apk add --no-cache openssl
+RUN apt -y update && apt install -y nginx && apt install openssl -y
 
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY ./conf/default /etc/nginx/sites-available/
 
-# Expose only the HTTPS port
-EXPOSE 443
+COPY ./tools/script.sh /
+
+CMD [ "/script.sh" ]
