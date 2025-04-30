@@ -10,4 +10,5 @@ status:
 
 re:
 	@make down
+	@sleep 100
 	@make up

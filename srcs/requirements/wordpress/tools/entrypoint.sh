@@ -2,8 +2,24 @@
 set -e
 
 # Secrets
-WP_ADMIN_PASSWORD=$(cat /run/secrets/wp_admin_password)
-DB_PASSWORD=$(cat /run/secrets/db_password)
+# In entrypoint.sh
+if [ -f "/run/secrets/wp_admin_password.txt" ]; then
+  WP_ADMIN_PASSWORD=$(cat /run/secrets/wp_admin_password.txt)
+else
+  echo "wp_admin_password not found!"
+  exit 1
+fi
+
+# Repeat for other secrets if necessary
+if [ -f "/run/secrets/db_password.txt" ]; then
+  DB_PASSWORD=$(cat /run/secrets/db_password.txt)
+else
+  echo "db_password not found!"
+  exit 1
+fi
+
+# Proceed with WordPress setup...
+
 
 # Wait for DB
 until mysql -h mariadb -u"$MYSQL_USER" -p"$DB_PASSWORD" "$MYSQL_DATABASE" -e "SELECT 1"; do

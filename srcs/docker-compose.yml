@@ -1,13 +1,5 @@
 version: '3.9'
 
-secrets:
-  db_root_password:
-    file: ../secrets/db_root_password.txt
-  db_password:
-    file: ../secrets/db_password.txt
-  wp_admin_password:
-    file: ../secrets/wp_admin_password.txt
-
 volumes:
   mariadb_data:
     name: mariadb_data
@@ -36,30 +28,30 @@ services:
     env_file: .env
     volumes:
       - mariadb_data:/var/lib/mysql
+      - ../secrets:/run/secrets:ro
     restart: always
     networks:
       - inception
-    secrets:
-      - db_root_password
-      - db_password
 
   wordpress:
     build: ./requirements/wordpress
     container_name: wordpress
     env_file: .env
+    ports:
+      - "9000"
     volumes:
       - wordpress_data:/var/www/html
+      - ../secrets:/run/secrets:ro
     depends_on:
       - mariadb
     restart: always
     networks:
       - inception
-    secrets:
-      - wp_admin_password
 
   nginx:
     build: ./requirements/nginx
     container_name: nginx
+    env_file: .env
     volumes:
       - wordpress_data:/var/www/html
     ports:
@@ -69,4 +61,3 @@ services:
     restart: always
     networks:
       - inception
-
