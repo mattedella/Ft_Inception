@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -x
 
 echo "[DEBUG] Entrypoint script started" >&2
 
@@ -43,4 +44,4 @@ echo "[DEBUG] Initialization done. Shutting down temp MariaDB..." >&2
 mysqladmin --protocol=socket --socket=/run/mysqld/mysqld.sock shutdown
 
 echo "[DEBUG] About to exec mysqld..." >&2
-exec mysqld --user=mysql --port=3306 --bind-address=0.0.0.0
+exec mysqld --user=mysql

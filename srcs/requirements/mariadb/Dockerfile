@@ -12,8 +12,8 @@ RUN apk update && apk add --no-cache \
 EXPOSE 3306
 
 # Add custom MariaDB config
-COPY config/ /etc/mysql/conf.d/
-RUN chmod 644 /etc/mysql/conf.d/*
+COPY config/ /etc/my.cnf.d/
+RUN chmod 777 /etc/my.cnf.d/*
 
 # Add custom entrypoint
 COPY tools/entrypoint.sh /usr/local/bin/entrypoint.sh

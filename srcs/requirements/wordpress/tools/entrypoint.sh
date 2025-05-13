@@ -18,9 +18,7 @@ else
   exit 1
 fi
 
-# Proceed with WordPress setup...
-
-
+echo "starting wordpress..."
 # Wait for DB
 echo "Waiting for DB..."
 for i in {30..0}; do
@@ -36,24 +34,26 @@ if [ "$i" = 0 ]; then
     exit 1
 fi
 
+# Proceed with WordPress setup...
 
-# Install WordPress if not installed
-if ! wp core is-installed --path=/var/www/html; then
+if [ ! -f /var/www/html/wp-load.php ]; then
+  echo "WordPress not found. Downloading..."
+
   echo "Cleaning up any partial install..."
   rm -rf /var/www/html/*
-  
+
   echo "Downloading WordPress core..."
-  wp core download --path=/var/www/html
-  
+  wp core download --path=/var/www/html/
+
   echo "Creating wp-config..."
   wp config create \
     --dbname=$MYSQL_DATABASE \
     --dbuser=$MYSQL_USER \
     --dbpass=$DB_PASSWORD \
     --dbhost=$WP_DB_HOST \
-    --path=/var/www/html \
+    --path=/var/www/html/ \
     --skip-check
-  
+
   echo "Installing WordPress..."
   wp core install \
     --url=https://$DOMAIN_NAME \
@@ -61,8 +61,9 @@ if ! wp core is-installed --path=/var/www/html; then
     --admin_user=$WP_ADMIN_USER \
     --admin_password=$WP_ADMIN_PASSWORD \
     --admin_email=$WP_ADMIN_EMAIL \
-    --path=/var/www/html
+    --path=/var/www/html/
 fi
 
+
 # Start PHP-FPM
-exec php-fpm
+exec php-fpm81 -F
