@@ -4,6 +4,7 @@ FROM alpine:3.18
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.18/main" > /etc/apk/repositories && \
     echo "https://dl-cdn.alpinelinux.org/alpine/v3.18/community" >> /etc/apk/repositories
 
+
 # Install dependencies
 RUN apk update && apk add --no-cache \
     php81 \

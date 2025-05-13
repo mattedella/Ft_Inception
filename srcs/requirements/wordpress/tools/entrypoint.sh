@@ -22,21 +22,39 @@ fi
 
 
 # Wait for DB
-until mysql -h mariadb -u"$MYSQL_USER" -p"$DB_PASSWORD" "$MYSQL_DATABASE" -e "SELECT 1"; do
-  echo "Waiting for DB..."
-  sleep 2
+echo "Waiting for DB..."
+for i in {30..0}; do
+    if mysqladmin ping -h mariadb --silent; then
+        break
+    fi
+    echo "Waiting for DB..."
+    sleep 1
 done
+
+if [ "$i" = 0 ]; then
+    echo >&2 "MariaDB did not become available in time."
+    exit 1
+fi
+
 
 # Install WordPress if not installed
 if ! wp core is-installed --path=/var/www/html; then
+  echo "Cleaning up any partial install..."
+  rm -rf /var/www/html/*
+  
+  echo "Downloading WordPress core..."
   wp core download --path=/var/www/html
+  
+  echo "Creating wp-config..."
   wp config create \
     --dbname=$MYSQL_DATABASE \
     --dbuser=$MYSQL_USER \
     --dbpass=$DB_PASSWORD \
-    --dbhost=mariadb \
+    --dbhost=$WP_DB_HOST \
     --path=/var/www/html \
     --skip-check
+  
+  echo "Installing WordPress..."
   wp core install \
     --url=https://$DOMAIN_NAME \
     --title="Inception" \

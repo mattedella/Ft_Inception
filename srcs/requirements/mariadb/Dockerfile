@@ -5,7 +5,11 @@ RUN apk update && apk add --no-cache \
     mariadb \
     mariadb-client \
     bash \
-    curl
+    curl \
+    su-exec
+
+
+EXPOSE 3306
 
 # Add custom MariaDB config
 COPY config/ /etc/mysql/conf.d/
@@ -17,4 +21,3 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Set entrypoint and command
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["mysqld"]
