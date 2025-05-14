@@ -35,8 +35,8 @@ fi
 echo "[DEBUG] Running SQL setup..." >&2
 mysql --protocol=socket --socket=/run/mysqld/mysqld.sock -u root <<-EOSQL
   CREATE DATABASE IF NOT EXISTS wordpress;
-  CREATE USER IF NOT EXISTS 'wpuser'@'%' IDENTIFIED BY 'wppassword';
-  GRANT ALL PRIVILEGES ON wordpress.* TO 'wpuser'@'%';
+  CREATE USER IF NOT EXISTS 'user123'@'%' IDENTIFIED BY 'password123';
+  GRANT ALL PRIVILEGES ON wordpress.* TO 'user123'@'%';
   FLUSH PRIVILEGES;
 EOSQL
 
