@@ -3,6 +3,10 @@ FROM alpine:3.18
 # Install nginx and OpenSSL
 RUN apk add --no-cache nginx openssl
 
+RUN mkdir -p /run/nginx
+
+COPY ./config/nginx.conf /etc/nginx/nginx.conf
+
 # Copy custom default.conf (ensure it's valid and inside the correct directory)
 COPY ./config/default.conf /etc/nginx/conf.d/default.conf
 
