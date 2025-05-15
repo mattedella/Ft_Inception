@@ -1,8 +1,7 @@
 #!/bin/sh
 set -e
 
-# Secrets
-# In entrypoint.sh
+# Read secrets
 if [ -f "/run/secrets/wp_admin_password.txt" ]; then
   WP_ADMIN_PASSWORD=$(cat /run/secrets/wp_admin_password.txt)
 else
@@ -10,7 +9,6 @@ else
   exit 1
 fi
 
-# Repeat for other secrets if necessary
 if [ -f "/run/secrets/db_password.txt" ]; then
   DB_PASSWORD=$(cat /run/secrets/db_password.txt)
 else
@@ -18,15 +16,20 @@ else
   exit 1
 fi
 
-echo "starting wordpress..."
-# Wait for DB
-echo "Waiting for DB..."
+if [ -f "/run/secrets/db_password.txt" ]; then
+  WP_USER_PASSWORD=$(cat /run/secrets/wp_user_password.txt)
+else
+  echo "wp_user_password not found!"
+  exit 1
+fi
+
+echo "Waiting for MariaDB to be ready..."
 for i in {30..0}; do
     if mysqladmin ping -h mariadb --silent; then
         break
     fi
     echo "Waiting for DB..."
-    sleep 1
+    sleep 2
 done
 
 if [ "$i" = 0 ]; then
@@ -34,36 +37,70 @@ if [ "$i" = 0 ]; then
     exit 1
 fi
 
-# Proceed with WordPress setup...
-
+# Download WordPress if not present
 if [ ! -f /var/www/html/wp-load.php ]; then
-  echo "WordPress not found. Downloading..."
+    echo "Downloading WordPress core..."
+    rm -rf /var/www/html/*
+    wp core download --path=/var/www/html/ --allow-root
+fi
 
-  echo "Cleaning up any partial install..."
-  rm -rf /var/www/html/*
+# Create wp-config.php if it doesn't exist
+if [ ! -f /var/www/html/wp-config.php ]; then
+    echo "Creating wp-config.php..."
+    wp config create \
+        --dbname="$MYSQL_DATABASE" \
+        --dbuser="$MYSQL_USER" \
+        --dbpass="$DB_PASSWORD" \
+        --dbhost="$WP_DB_HOST" \
+        --path=/var/www/html/ \
+        --skip-check \
+        --allow-root
+fi
 
-  echo "Downloading WordPress core..."
-  wp core download --path=/var/www/html/
+# Check if WordPress is installed
+if ! wp core is-installed --path=/var/www/html/ --allow-root; then
+    echo "Installing WordPress..."
+    wp core install \
+        --url="https://${DOMAIN_NAME}" \
+        --title="Inception" \
+        --admin_user="${WP_ADMIN_USER}" \
+        --admin_password="${WP_ADMIN_PASSWORD}" \
+        --admin_email="${WP_ADMIN_EMAIL}" \
+        --path=/var/www/html/ \
+        --allow-root
+else
+    echo "WordPress already installed, checking admin user..."
 
-  echo "Creating wp-config..."
-  wp config create \
-    --dbname=$MYSQL_DATABASE \
-    --dbuser=$MYSQL_USER \
-    --dbpass=$DB_PASSWORD \
-    --dbhost=$WP_DB_HOST \
-    --path=/var/www/html/ \
-    --skip-check
-
-  echo "Installing WordPress..."
-  wp core install \
-    --url=https://$DOMAIN_NAME \
-    --title="Inception" \
-    --admin_user=$WP_ADMIN_USER \
-    --admin_password=$WP_ADMIN_PASSWORD \
-    --admin_email=$WP_ADMIN_EMAIL \
-    --path=/var/www/html/
+    # Check if user exists
+    if wp user get "${WP_ADMIN_USER}" --path=/var/www/html/ --allow-root > /dev/null 2>&1; then
+        echo "Admin user exists, updating..."
+        wp user update "${WP_ADMIN_USER}" \
+            --user_pass="${WP_ADMIN_PASSWORD}" \
+            --user_email="${WP_ADMIN_EMAIL}" \
+            --role=administrator \
+            --allow-root
+    else
+        echo "Admin user not found, creating..."
+        wp user create "${WP_ADMIN_USER}" "${WP_ADMIN_EMAIL}" \
+            --user_pass="${WP_ADMIN_PASSWORD}" \
+            --role=administrator \
+            --allow-root
+    fi
+    if wp user get "${WP_USER}" --path=/var/www/html/ --allow-root > /dev/null 2>&1; then
+        echo "User exists, updating..."
+        wp user update "${WP_USER}" \
+            --user_pass="${WP_USER_PASSWORD}" \
+            --user_email="${WP_USER_EMAIL}" \
+            --role=subscriber \
+            --allow-root
+    else
+        echo "User not found, creating..."
+        wp user create "${WP_USER}" "${WP_USER_EMAIL}" \
+            --user_pass="${WP_USER_PASSWORD}" \
+            --role=subscriber \
+            --allow-root
+    fi
 fi
 
 
-# Start PHP-FPM
 exec php-fpm81 -F
