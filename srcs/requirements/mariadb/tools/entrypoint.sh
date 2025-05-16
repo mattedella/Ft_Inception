@@ -33,11 +33,19 @@ if [ "$i" = 0 ]; then
 fi
 
 echo "[DEBUG] Running SQL setup..." >&2
-mysql --protocol=socket --socket=/run/mysqld/mysqld.sock -u root <<-EOSQL
-  CREATE DATABASE IF NOT EXISTS wordpress;
-  CREATE USER IF NOT EXISTS 'user123'@'%' IDENTIFIED BY 'password123';
-  GRANT ALL PRIVILEGES ON wordpress.* TO 'user123'@'%';
-  FLUSH PRIVILEGES;
+if [ -n "$MYSQL_ROOT_PASSWORD" ]; then
+    ROOT_PASSWORD="$MYSQL_ROOT_PASSWORD"
+fi
+
+if [ -n "$MYSQL_PASSWORD" ]; then
+    DB_PASSWORD="$MYSQL_PASSWORD"
+fi
+
+mysql --protocol=socket --socket=/run/mysqld/mysqld.sock -u root -p"${ROOT_PASSWORD}" <<-EOSQL
+    CREATE DATABASE IF NOT EXISTS ${MYSQL_DATABASE};
+    CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';
+    GRANT ALL PRIVILEGES ON ${MYSQL_DATABASE}.* TO '${MYSQL_USER}'@'%';
+    FLUSH PRIVILEGES;
 EOSQL
 
 echo "[DEBUG] Initialization done. Shutting down temp MariaDB..." >&2

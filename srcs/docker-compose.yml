@@ -30,7 +30,6 @@ services:
     env_file: .env
     volumes:
       - mariadb_data:/var/lib/mysql
-      - ../secrets:/run/secrets:ro
     restart: always
     networks:
       - inception
@@ -39,11 +38,10 @@ services:
     build: ./requirements/wordpress
     container_name: wordpress
     env_file: .env
-    ports:
+    expose:
       - "9000"
     volumes:
       - wordpress_data:/var/www/html
-      - ../secrets:/run/secrets:ro
     depends_on:
       - mariadb
     restart: always

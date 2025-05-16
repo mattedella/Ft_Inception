@@ -1,27 +1,10 @@
 #!/bin/sh
 set -e
 
-# Read secrets
-if [ -f "/run/secrets/wp_admin_password.txt" ]; then
-  WP_ADMIN_PASSWORD=$(cat /run/secrets/wp_admin_password.txt)
-else
-  echo "wp_admin_password not found!"
-  exit 1
-fi
-
-if [ -f "/run/secrets/db_password.txt" ]; then
-  DB_PASSWORD=$(cat /run/secrets/db_password.txt)
-else
-  echo "db_password not found!"
-  exit 1
-fi
-
-if [ -f "/run/secrets/db_password.txt" ]; then
-  WP_USER_PASSWORD=$(cat /run/secrets/wp_user_password.txt)
-else
-  echo "wp_user_password not found!"
-  exit 1
-fi
+# Read secrets from environment variables
+WP_ADMIN_PASSWORD="$WP_ADMIN_PASSWORD"
+DB_PASSWORD="$MYSQL_PASSWORD"
+WP_USER_PASSWORD="$WP_USER_PASSWORD"
 
 echo "Waiting for MariaDB to be ready..."
 for i in {30..0}; do
@@ -103,4 +86,4 @@ else
 fi
 
 
-exec php-fpm81 -F
+exec php-fpm81 --nodaemonize
